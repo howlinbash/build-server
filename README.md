@@ -4,6 +4,14 @@ This simple example shows how to set up multiple websites running behind a docke
 
 Some of the configuration is derived from <https://github.com/fatk/docker-letsencrypt-nginx-proxy-companion-examples> with some simplifications and updates to work with current `nginx.tmpl` from [nginx-proxy](https://github.com/jwilder/nginx-proxy) and docker-compose v2 files.
 
+## Quick Start
+create droplet on Digital Ocean
+drop it and connect
+git clone https://github.com/howlinbash/compose
+cd compose
+add ENV_VARS to .env
+docker-compose up -d
+
 ## Running the example
 ### Prerequisites
 * [docker](https://docs.docker.com/engine/installation/) (>= 1.10)
