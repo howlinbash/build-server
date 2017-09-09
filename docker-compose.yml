@@ -1,5 +1,10 @@
 version: "2"
 
+networks:
+  main:
+    driver: bridge
+  back:
+    driver: bridge
 services:
   nginx:
     restart: always
@@ -13,6 +18,8 @@ services:
       - "/etc/nginx/vhost.d"
       - "/usr/share/nginx/html"
       - "./volumes/proxy/certs:/etc/nginx/certs:ro"
+    networks:
+      - main
 
   nginx-gen:
     restart: always
@@ -24,6 +31,8 @@ services:
     volumes_from:
       - nginx
     entrypoint: /usr/local/bin/docker-gen -notify-sighup nginx -watch -wait 5s:30s /etc/docker-gen/templates/nginx.tmpl /etc/nginx/conf.d/default.conf
+    networks:
+      - main
 
   letsencrypt-nginx-proxy-companion:
     restart: always
@@ -36,8 +45,10 @@ services:
       - "./volumes/proxy/certs:/etc/nginx/certs:rw"
     environment:
       - NGINX_DOCKER_GEN_CONTAINER=nginx-gen
+    networks:
+      - main
 
-  app1:
+  piwik:
     restart: always
     image: ${IMAGE1}
     container_name: ${APP1}
@@ -47,14 +58,18 @@ services:
       - VIRTUAL_PORT=${PORT1}
       - LETSENCRYPT_HOST=${HOST1}
       - LETSENCRYPT_EMAIL=${EMAIL}
-
-  app2:
+    links: 
+      - ${APP2}
+    depends_on:
+      - db
+    networks:
+      - main
+      - back
+  db:
     restart: always
     image: ${IMAGE2}
     container_name: ${APP2}
     environment:
-      - VIRTUAL_HOST=${HOST2}
-      - VIRTUAL_NETWORK=nginx-proxy
-      - VIRTUAL_PORT=${PORT2}
-      - LETSENCRYPT_HOST=${HOST2}
-      - LETSENCRYPT_EMAIL=${EMAIL}
+      - MYSQL_ROOT_PASSWORD
+    networks:
+      - back
